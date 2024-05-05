@@ -1,0 +1,29 @@
+
+
+#grid {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 100vh;
+
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    gap: 5px;
+}
+
+
+
+.grid-item {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.grid-item:hover {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.grid-item.clicked {
+    background-color: rgba(255, 255, 255, 0.5);
+}

@@ -1,0 +1,7 @@
+.venv/
+sc36@192.168.227.26/
+__pycache__/
+sqm copy.py
+test.py
+database.py
+.DS_Store
