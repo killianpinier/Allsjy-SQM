@@ -9,9 +9,13 @@ def SET_SELECTED(parameters):
 def DELETE_CONFIG(parameters):
     return ("DELETE FROM CONFIGS WHERE id = ?", (parameters))
 
-def SELECT(value, field, condition_field):
-    return ("SELECT {} FROM CONFIGS WHERE {} = ?".format(field, condition_field), (str(value)))
+def SELECT(field, condition_field, condition_value):
+    return ("SELECT {} FROM CONFIGS WHERE {} = ?".format(field, condition_field), (str(condition_value)))
 
+def UPDATE(field, value, id):
+    return ('UPDATE CONFIGS SET {} = "{}" WHERE id = ?'.format(field, value), id)
+
+CREATE_TABLE = ("CREATE TABLE IF NOT EXISTS CONFIGS (id INTEGER PRIMARY KEY, name TEXT, description TEXT, obstacles TEXT, selected BOOLEAN, grid_rows INTEGER, grid_columns INTEGER, time_interval INTEGER)", ())
 RESET_SELECTED = ("UPDATE CONFIGS SET selected = 0", ())
 NEW_CONFIG_SET_SELECTED = ("UPDATE CONFIGS SET selected = 1 WHERE id = (SELECT MAX(id) FROM CONFIGS)", ())
 SELECT_SELECTED_CONFIGS = ("SELECT * FROM CONFIGS WHERE selected = 1", ())
