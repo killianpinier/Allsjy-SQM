@@ -3,5 +3,6 @@ sc36@192.168.227.26/
 __pycache__/
 sqm copy.py
 test.py
-database.py
+database.db
 .DS_Store
+static/images

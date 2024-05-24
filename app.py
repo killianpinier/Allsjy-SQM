@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, jsonify, redirect
 import sqlite3
-from sqm import get_sqm_image
+from sqm import get_sqm_image, create_image_directories
+from utils import get_image_data
 from queries import *
+import os, time
 
 app = Flask(__name__)
+sqm_status = False # True: Running, False: Not running
 
 DATABASE_NAME = "database.db"
 
@@ -22,7 +25,10 @@ class Config:
 
 @app.route('/')       
 def index(): 
-    data = {}
+    print(sqm_status)
+    data = {
+        "sqm_status": sqm_status,
+    }
     selected_config = get_selected_config()
     if selected_config == None:
         selected_config = "No configuration selected"
@@ -30,14 +36,31 @@ def index():
     return render_template("index.html", data=data)
 
 @app.route('/run', methods=['POST'])
-def button_click():
+def run_sqm():
+    global sqm_status
+    sqm_status = True
+
     selected_config = get_selected_config()
     if selected_config == None:
-        return jsonify({"Error", "No configuration selected"})
+        return jsonify({"message": "No configuration selected"})
     config = fetch("*", "id", selected_config[0], False)
-    obstacles = [int(num) for num in config[3].split(",")].sort()
-    get_sqm_image(obstacles, config[5], config[6])
-    return jsonify({"message": "Button clicked"})
+
+    while sqm_status:
+        obstacles = []
+        if config[3] != '':
+            try:
+                obstacles = [int(num) for num in config[3].split(",")].sort()
+            except Exception as e:
+                return jsonify({"message": f"Error: {e}"})
+        get_sqm_image(obstacles, config[5], config[6])
+        time.sleep(config[7]*60)
+    return jsonify({"message": ""})
+
+@app.route('/stop', methods=['POST'])
+def stop_sqm():
+    global sqm_status
+    sqm_status = False
+    return jsonify({"message": ""}) 
 
 @app.route('/config/select/<config_id>', methods=['POST'])
 def select_config(config_id):
@@ -52,8 +75,21 @@ def remove_config(config_id):
     return jsonify({"message": "Config removed"})
 
 @app.route('/images')       
-def images(): 
-    return render_template("images.html")
+def images():
+    data = get_image_data()
+    return render_template("images.html", data=data)
+
+@app.route('/images/<dir_id>')
+def image_dir(dir_id):
+    try:
+        data = {
+            "images": [os.path.join("images", dir_id, filename) for filename in get_image_data()[dir_id]]
+        }
+
+        print(data)
+        return render_template("image_dir.html", data=data)
+    except Exception as e:
+        return f"{e}, 400"
 
 @app.route('/configs')       
 def configs():
@@ -93,7 +129,10 @@ def update_config(config_id):
         else:
             cursor.execute("SELECT * FROM CONFIGS WHERE id = ?", (config_id))
             record = cursor.fetchone()
-            return render_template("update_config.html", config=record)
+            if record is not None:
+                return render_template("update_config.html", config=record)
+            else:
+                return "Record not found", 400
         
 
 @app.route('/test')

@@ -4,6 +4,7 @@ import os
 from time import sleep
 import math
 from datetime import datetime
+from utils import create_image_directories
 
 width = 1024
 height = 786
@@ -70,7 +71,7 @@ def generate_sqm_image(model, obstacles, grid_x_count, grid_y_count):
 
         mask_image = Image.fromarray(mask)
         blended_image = Image.blend(image, mask_image, alpha=0.4)
-        blended_image.save("/home/sc36/sqm/static/images/current_sqm_image.jpg")
+        save_image(blended_image)
       
     else:
         print("Image was not found")
@@ -163,3 +164,9 @@ def logInfo(secs, rms, model, psqm):
         f.write(a)
         f.close()
     return
+
+def save_image(image):
+    dir = create_image_directories()
+    image_name = datetime.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
+    image.save(os.path.join(os.getcwd(), "static/images/current_sqm_image.jpg"))
+    image.save(os.path.join(dir, image_name))
